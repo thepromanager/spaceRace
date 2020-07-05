@@ -140,8 +140,8 @@ class Rotum(Ship):
         self.center=[16,13.5]
         self.weight=120
         self.thrusters=[
-        Thruster(self,controls[0],x=16,y=7,a=180,power=10,image="rotum/thruster1.png"),
-        Thruster(self,controls[1],x=11,y=18,a=45,power=6,image="rotum/thruster2.png"),
+        Thruster(self,controls[0],x=11,y=18,a=45,power=6,image="rotum/thruster2.png"),
+        Thruster(self,controls[1],x=16,y=7,a=180,power=8,image="rotum/thruster1.png"),
         Thruster(self,controls[2],x=21,y=18,a=-45,power=6,image="rotum/thruster3.png")
         ]
 class Valeria(Ship):
@@ -152,9 +152,9 @@ class Valeria(Ship):
         self.center=[16,16]
         self.weight=200
         self.thrusters=[
-        Thruster(self,controls[0],x=7,y=8,a=40,power=7,image="valeria/thruster1.png"),
-        Thruster(self,controls[1],x=25,y=8,a=-40,power=7,image="valeria/thruster3.png"),
-        Thruster(self,controls[2],x=10,y=27,a=-60,power=3,image="valeria/thruster2.png"),
+        Thruster(self,controls[0],x=10,y=27,a=-60,power=3,image="valeria/thruster2.png"),
+        Thruster(self,controls[1],x=7,y=8,a=40,power=7,image="valeria/thruster1.png"),
+        Thruster(self,controls[2],x=25,y=8,a=-40,power=7,image="valeria/thruster3.png"),
         Thruster(self,controls[3],x=22,y=27,a=60,power=3,image="valeria/thruster4.png"),
         ]
 class Zerti(Ship):
@@ -165,9 +165,9 @@ class Zerti(Ship):
         self.center=[17.5,19.5]
         self.weight=90
         self.thrusters=[
-        Thruster(self,controls[0],x=16,y=26,a=-45,power=3.5,image="zerti/thruster1.png"),
-        Thruster(self,controls[1],x=19,y=26,a=45,power=3.5,image="zerti/thruster2.png"),
-        Thruster(self,controls[2],x=8,y=19,a=-120,power=100,image="zerti/thruster3.png",single=True,rotPowerFactor=1/3),
+        Thruster(self,controls[0],x=8,y=19,a=-120,power=100,image="zerti/thruster3.png",single=True,rotPowerFactor=1/3),
+        Thruster(self,controls[1],x=16,y=26,a=-45,power=3.5,image="zerti/thruster1.png"),
+        Thruster(self,controls[2],x=19,y=26,a=45,power=3.5,image="zerti/thruster2.png"),
         Thruster(self,controls[3],x=27,y=19,a=120,power=100,image="zerti/thruster4.png",single=True,rotPowerFactor=1/3),
         ]
     
@@ -209,7 +209,7 @@ class Thruster():
             #blitRotate(gameDisplay,self.image,[ship.x+ship.center[0]*scale,ship.y+ship.center[1]*scale],[ship.center[0]*scale,ship.center[1]*scale],ship.r,ship.camera)
 World.ships.append(Valeria([pygame.K_q,pygame.K_w,pygame.K_e,pygame.K_r],800))
 World.ships.append(Astari([pygame.K_i,pygame.K_o,pygame.K_p,pygame.K_f],0))
-World.ships.append(Rotum([pygame.K_z,pygame.K_x,pygame.K_c,pygame.K_v],400))
+World.ships.append(Zerti([pygame.K_z,pygame.K_x,pygame.K_c,pygame.K_v],400))
 for ship in World.ships:
     World.cameras.append(Camera(ship))
 running = True
