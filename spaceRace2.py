@@ -1,10 +1,12 @@
 import pygame
 import os
 import math
+import time
 gameDisplay = pygame.display.set_mode((1200, 780))
 background = pygame.image.load(os.path.join("textures", "map_1.png"))
 background = pygame.transform.scale(background, (1000*3, 600*3))
 miniMap =pygame.transform.scale(background, (100, 60))
+clock = pygame.time.Clock()
 screenWidth=1200
 screenHeight=780
 playerScreenWidth=400
@@ -66,8 +68,7 @@ class Camera():
         #blitRotate(gameDisplay,self.image,[ship.x+ship.center[0]*scale,ship.y+ship.center[1]*scale],[ship.center[0]*scale,ship.center[1]*scale],ship.r,ship.camera)
 class Ship():
     def __init__(self,offset):
-        super(Ship, self).__init__()
-        print(offset)
+        #print(offset)
         self.hurtbox = [0,0,1,1]
         self.xv = 0
         self.yv = 0
@@ -78,7 +79,6 @@ class Ship():
         self.offset=offset
         self.weight=1
         self.thrusters=[]
-        self.lastKeys=None
     def draw(self):
         World.draw(self.image,self.x,self.y,self.a,center=self.center)
         #blitRotate(gameDisplay,self.image,[self.x+self.center[0]*scale,self.y+self.center[1]*scale],[self.center[0]*scale,self.center[1]*scale],self.r,self.camera)
@@ -113,12 +113,7 @@ class Ship():
 
     def keys(self,pressed):
         for thruster in self.thrusters:
-            if(pressed[thruster.key] and thruster.single==False):
-                thruster.activate()
-            if(self.lastKeys):
-                if(not self.lastKeys[thruster.key] and pressed[thruster.key]):
-                    thruster.activate()
-        self.lastKeys=pressed
+            thruster.update(pressed)
 
 class Astari(Ship):
     image=Ship.load("astari/astari.png")
@@ -129,7 +124,7 @@ class Astari(Ship):
         self.weight=100
         self.thrusters=[
         Thruster(self,controls[0],x=8.5,y=22,power=2,image="astari/thruster1.png"),
-        Thruster(self,controls[1],x=16,y=22,power=2,image="astari/thruster2.png"),
+        Thruster(self,controls[1],x=16,y=22,power=3,image="astari/thruster2.png"),
         Thruster(self,controls[2],x=23.5,y=22,power=2,image="astari/thruster3.png")
         ]
 class Rotum(Ship):
@@ -152,10 +147,10 @@ class Valeria(Ship):
         self.center=[16,16]
         self.weight=200
         self.thrusters=[
-        Thruster(self,controls[0],x=10,y=27,a=-60,power=3,image="valeria/thruster2.png"),
-        Thruster(self,controls[1],x=7,y=8,a=40,power=7,image="valeria/thruster1.png"),
-        Thruster(self,controls[2],x=25,y=8,a=-40,power=7,image="valeria/thruster3.png"),
-        Thruster(self,controls[3],x=22,y=27,a=60,power=3,image="valeria/thruster4.png"),
+        Thruster(self,controls[0],x=7,y=8,a=-40,power=7,image="valeria/thruster1.png"),
+        Thruster(self,controls[1],x=10,y=27,a=-60,power=5,image="valeria/thruster2.png"),
+        Thruster(self,controls[2],x=22,y=27,a=60,power=5,image="valeria/thruster4.png"),
+        Thruster(self,controls[3],x=25,y=8,a=40,power=7,image="valeria/thruster3.png"),
         ]
 class Zerti(Ship):
     image=Ship.load("zerti/zerti.png")
@@ -165,15 +160,14 @@ class Zerti(Ship):
         self.center=[17.5,19.5]
         self.weight=90
         self.thrusters=[
-        Thruster(self,controls[0],x=8,y=19,a=-120,power=100,image="zerti/thruster3.png",single=True,rotPowerFactor=1/3),
+        Fluster(self,controls[0],x=8,y=19,a=-120,power=150,image="zerti/thruster3.png",rotPowerFactor=1/3),
         Thruster(self,controls[1],x=16,y=26,a=-45,power=3.5,image="zerti/thruster1.png"),
         Thruster(self,controls[2],x=19,y=26,a=45,power=3.5,image="zerti/thruster2.png"),
-        Thruster(self,controls[3],x=27,y=19,a=120,power=100,image="zerti/thruster4.png",single=True,rotPowerFactor=1/3),
+        Fluster(self,controls[3],x=27,y=19,a=120,power=150,image="zerti/thruster4.png",rotPowerFactor=1/3),
         ]
     
 class Thruster():
-    def __init__(self,ship,key,x=0,y=0,power=1,a=0,image="",single=False,rotPowerFactor=1):
-        super(Thruster, self).__init__()
+    def __init__(self,ship,key,x=0,y=0,power=1,a=0,image="",rotPowerFactor=1):
         self.ship = ship
         self.key = key
         self.x=x
@@ -182,8 +176,10 @@ class Thruster():
         self.a=a
         self.image=Ship.load(image)
         self.active=False
-        self.single=single
         self.rotPowerFactor=rotPowerFactor
+    def update(self, pressed):
+        if(pressed[self.key]):
+            self.activate()
     def activate(self):
 
         #calculate torque
@@ -207,9 +203,28 @@ class Thruster():
             self.active=False
             World.draw(self.image,self.ship.x,self.ship.y,self.ship.a,self.ship.center)
             #blitRotate(gameDisplay,self.image,[ship.x+ship.center[0]*scale,ship.y+ship.center[1]*scale],[ship.center[0]*scale,ship.center[1]*scale],ship.r,ship.camera)
-World.ships.append(Valeria([pygame.K_q,pygame.K_w,pygame.K_e,pygame.K_r],800))
-World.ships.append(Astari([pygame.K_i,pygame.K_o,pygame.K_p,pygame.K_f],0))
+class Fluster(Thruster):
+    def __init__(self,ship,key,x=0,y=0,power=1,a=0,image="",rotPowerFactor=1,cooldown=30):
+        super().__init__(ship,key,x,y,power,a,image,rotPowerFactor)
+        self.timer = 0
+        self.cooldown = cooldown
+        self.lastKey = False
+    def update(self,pressed):
+        if(pressed[self.key]):
+            if(not self.lastKey):
+                if not self.timer:
+                    self.activate()
+                    self.timer=self.cooldown
+                else:
+                    self.timer+=5
+            self.lastKey=True
+        else:
+            self.lastKey=False
+        if self.timer:
+            self.timer-=1
+World.ships.append(Astari([pygame.K_q,pygame.K_w,pygame.K_e,pygame.K_r],000))
 World.ships.append(Zerti([pygame.K_z,pygame.K_x,pygame.K_c,pygame.K_v],400))
+World.ships.append(Valeria([pygame.K_u,pygame.K_i,pygame.K_o,pygame.K_p],800))
 for ship in World.ships:
     World.cameras.append(Camera(ship))
 running = True
@@ -217,6 +232,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    clock.tick(60)
 
     # DO THINGS
     pressed = pygame.key.get_pressed()
@@ -251,4 +268,9 @@ quit()
 #timetrials
 #race
 
-
+"""
+motorer:
+hålla inne är bra acceleration
+tap med delay
+charga upp
+"""
