@@ -195,7 +195,7 @@ class Wio(Ship):
         Buster(self,controls[3],x=22,y=19,a=0,power=3,image="wio/buster2.png",rotPowerFactor=0.1),
         ]
 class Podracer(Ship):
-    image=Ship.load("podracer/second.png")
+    image=Ship.load("podracer/podracer.png")
     def __init__(self,controls,offset):
         super().__init__(offset)
         self.hurtbox=[10,6,24,26]
