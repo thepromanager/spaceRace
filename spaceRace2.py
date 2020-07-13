@@ -2,9 +2,12 @@ import pygame
 import os
 import math
 import time
+import random
 gameDisplay = pygame.display.set_mode((1200, 780))
 background = pygame.image.load(os.path.join("textures", "map_1.png"))
 background = pygame.transform.scale(background, (1000*3, 600*3))
+blueprint =pygame.image.load(os.path.join("textures", "blueprint_1.png"))
+blueprint = pygame.transform.scale(blueprint, (1000*3, 600*3))
 miniMap =pygame.transform.scale(background, (100, 60))
 clock = pygame.time.Clock()
 screenWidth=1200
@@ -32,6 +35,7 @@ def blitRotate(surf,image, pos, originPos, angle,area):
     rotated_image = pygame.transform.rotate(image, angle)
     surf.blit(rotated_image, origin,area=area)
 class World():
+    frictions={0:0.99,1:0.95,2:0.60}
     ships=[]
     cameras=[]
     def draw(image,x,y,a,center=[0,0]):
@@ -66,19 +70,22 @@ class Camera():
             else:
                 gameDisplay.blit(image,(screenX,screenY),area=box)
         #blitRotate(gameDisplay,self.image,[ship.x+ship.center[0]*scale,ship.y+ship.center[1]*scale],[ship.center[0]*scale,ship.center[1]*scale],ship.r,ship.camera)
-class Ship():
+class Ship():   
     def __init__(self,offset):
         #print(offset)
         self.hurtbox = [0,0,1,1]
         self.xv = 0
         self.yv = 0
         self.rv = 0
-        self.x = 300
-        self.y = 300
+        self.r=10*scale
+        self.x = 300+random.random()*200
+        self.y = 300+random.random()*200
         self.a = 0
         self.offset=offset
         self.weight=1
         self.thrusters=[]
+        self.mapFlag=0
+        self.lapCount=0
     def draw(self):
         World.draw(self.image,self.x,self.y,self.a,center=self.center)
         #blitRotate(gameDisplay,self.image,[self.x+self.center[0]*scale,self.y+self.center[1]*scale],[self.center[0]*scale,self.center[1]*scale],self.r,self.camera)
@@ -102,15 +109,24 @@ class Ship():
         #self.x=(self.x+self.center[0])%1000-self.center[0]
         #self.y=(self.y+self.center[1])%600-self.center[1]
         self.a=self.a%360
-        if(background.get_at((int(self.x+self.center[0]), int(self.y+self.center[1])))==(0,0,0,0)):
-            self.rv*=0.99 # är man i rymden eller inte??
-            self.yv*=0.99
-            self.xv*=0.99
-        else:
-            self.rv*=0.89 # är man i rymden eller inte??
-            self.yv*=0.89
-            self.xv*=0.89
+        color=blueprint.get_at((int(self.x+self.center[0]), int(self.y+self.center[1])))
+        self.rv*=World.frictions[color[0]] # är man i rymden eller inte??
+        self.yv*=World.frictions[color[0]]
+        self.xv*=World.frictions[color[0]]
+        if(color[1]==self.mapFlag+1 or (self.mapFlag==5 and color[1]==1)):
+            if(self.mapFlag==5):
+                self.lapCount+=1
+                print(self.__class__.__name__,self.lapCount)
+                if(self.lapCount==3):
+                    print(self.__class__.__name__,"won first")
 
+            self.mapFlag=color[1]
+        for ship in World.ships:
+            if not ship==self:
+                dist=math.sqrt((self.x-ship.x)**2+(self.y-ship.y)**2)
+                if dist < (self.r+ship.r):
+                   self.x-= (dist-(self.r+ship.r))*(1/2)*((self.x-ship.x)/dist)
+                   self.y-= (dist-(self.r+ship.r))*(1/2)*((self.y-ship.y)/dist)
     def keys(self,pressed):
         for thruster in self.thrusters:
             thruster.update(pressed)
@@ -307,11 +323,8 @@ while running:
 pygame.quit()
 quit()
 
-#Collision
-#top speed
 #hastighetsmark
 #damage och respawn
-#grön blink hastighet med pressed
 #Banor att racea på
 #autogenererad utforskning
 #låsa upp skepp
