@@ -165,7 +165,32 @@ class Zerti(Ship):
         Thruster(self,controls[2],x=19,y=26,a=45,power=3.5,image="zerti/thruster2.png"),
         Fluster(self,controls[3],x=27,y=19,a=120,power=150,image="zerti/thruster4.png",rotPowerFactor=1/3),
         ]
-    
+class Wio(Ship):
+    image=Ship.load("wio/wio.png")
+    def __init__(self,controls,offset):
+        super().__init__(offset)
+        self.hurtbox=[10,6,24,26]
+        self.center=[16,16]
+        self.weight=70
+        self.thrusters=[
+        Buster(self,controls[0],x=10,y=19,a=0,power=3,image="wio/buster1.png",rotPowerFactor=0.1),
+        Thruster(self,controls[1],x=12,y=26,a=135,power=3,image="valeria/thruster1.png"),
+        Thruster(self,controls[2],x=20,y=26,a=-135,power=3,image="valeria/thruster3.png"),
+        Buster(self,controls[3],x=22,y=19,a=0,power=3,image="wio/buster2.png",rotPowerFactor=0.1),
+        ]
+class Podracer(Ship):
+    image=Ship.load("podracer/second.png")
+    def __init__(self,controls,offset):
+        super().__init__(offset)
+        self.hurtbox=[10,6,24,26]
+        self.center=[15,14]
+        self.weight=70
+        self.thrusters=[
+        Muster(self,controls[0],x=10,y=19,a=0,power=2,image="zerti/thruster3.png",rotPowerFactor=1),
+        Fluster(self,controls[1],x=15,y=26,a=0,power=100,image="zerti/thruster1.png"),
+        Muster(self,controls[2],x=20,y=19,a=0,power=2,image="zerti/thruster4.png",rotPowerFactor=1),
+        ]
+
 class Thruster():
     def __init__(self,ship,key,x=0,y=0,power=1,a=0,image="",rotPowerFactor=1):
         self.ship = ship
@@ -222,9 +247,36 @@ class Fluster(Thruster):
             self.lastKey=False
         if self.timer:
             self.timer-=1
-World.ships.append(Astari([pygame.K_q,pygame.K_w,pygame.K_e,pygame.K_r],000))
-World.ships.append(Zerti([pygame.K_z,pygame.K_x,pygame.K_c,pygame.K_v],400))
-World.ships.append(Valeria([pygame.K_u,pygame.K_i,pygame.K_o,pygame.K_p],800))
+class Buster(Thruster):
+    def __init__(self, ship, key,x=0,y=0,power=1,a=0,image="",rotPowerFactor=1):
+        super(Buster, self).__init__(ship,key,x,y,power,a,image,rotPowerFactor)
+        self.chargeSpeed = self.power
+        self.maxPower = self.power*200
+        self.currentPower = 0
+    def update(self,pressed):
+        if(pressed[self.key]):
+            if self.currentPower<self.maxPower:
+                self.currentPower+=self.chargeSpeed
+        elif self.currentPower>1:
+            self.power=self.currentPower
+            self.activate()
+            self.currentPower*=0 # 0 is too hard and frame perfect
+class Muster(Thruster):
+    def __init__(self, ship, key,x=0,y=0,power=1,a=0,image="",rotPowerFactor=1):
+        super().__init__(ship,key,x,y,power,a,image,rotPowerFactor)
+        self.basePower = power
+        self.power = self.basePower
+        self.speedUp = 0.002
+    def update(self, pressed):
+        if(pressed[self.key]):
+            self.activate()
+            self.power+=self.speedUp
+        else:
+            self.power=self.basePower
+
+World.ships.append(Pink([pygame.K_q,pygame.K_w,pygame.K_e,pygame.K_r],000))
+World.ships.append(Podracer([pygame.K_z,pygame.K_x,pygame.K_c,pygame.K_v],400))
+World.ships.append(Rotum([pygame.K_u,pygame.K_i,pygame.K_o,pygame.K_p],800))
 for ship in World.ships:
     World.cameras.append(Camera(ship))
 running = True
