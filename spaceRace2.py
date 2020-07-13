@@ -290,7 +290,7 @@ class Muster(Thruster):
         else:
             self.power=self.basePower
 
-World.ships.append(Pink([pygame.K_q,pygame.K_w,pygame.K_e,pygame.K_r],000))
+World.ships.append(Wio([pygame.K_q,pygame.K_w,pygame.K_e,pygame.K_r],000))
 World.ships.append(Podracer([pygame.K_z,pygame.K_x,pygame.K_c,pygame.K_v],400))
 World.ships.append(Rotum([pygame.K_u,pygame.K_i,pygame.K_o,pygame.K_p],800))
 for ship in World.ships:
